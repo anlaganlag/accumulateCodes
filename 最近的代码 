@@ -1,0 +1,533 @@
+
+
+
+
+
+
+1月26日
+
+//操作dom
+for (let i = 0; i < 5; i++) {
+  var btn = document.createElement("button");
+  btn.appendChild(document.createTextNode("Button" + i));
+  btn.addEventListener("click", function () {
+    console.log(i);
+  });
+  document.body.appendChild(btn);
+}
+
+
+
+
+
+//dfs遍历执行cb
+function Traverse(p_element, p_callback) {
+  p_callback(p_element);
+  var list = p_element.children;
+  for (var i = 0; i < list.length; i++) {
+    Traverse(list[i], p_callback); // recursive call
+  }
+}
+
+
+//立即执行函数和闭包...
+var globalVar = "abc";
+(function outerFunction(outerArg) {
+  var outerFuncVar = "x";
+  (function innerFunction(innerArg) {
+    var innerFuncVar = "y";
+    console.log(
+      "outerArg = " + outerArg + "\n" + 
+      "outerFuncVar = " + outerFuncVar + "\n" +
+      "innerArg = " + innerArg + "\n" +
+      "innerFuncVar = " + innerFuncVar + "\n" +
+      "globalVar = " + globalVar
+    );
+  })(5);
+})(7);
+
+
+
+// outerArg = 7
+// outerFuncVar = x
+// innerArg = 5
+// innerFuncVar = y
+// globalVar = abc
+
+
+
+
+
+//输入参数返回是类..类是特殊的函数....类的this就是指代该类..
+const makeSaluteClass = (term) =>
+//匿名的类..类都是分两个部分..
+  class {
+    //构造函数部分
+    constructor(x) {
+      this.x = x;
+    }
+    //pt的方法部分 偶尔会有静态的方法(即方法前加上static这个关键字)
+    salute(y) {
+      console.log(`${this.x} says "${term}" to ${y}`);
+    }
+  };
+
+
+const Spanish = makeSaluteClass("HOLA");
+            构造           方法的参数
+new Spanish("ALFA").salute("BETA");
+
+
+//一行
+new (makeSaluteClass("HELLO"))("GAMMA").salute("DELTA");
+
+
+//将类构造参数和方法参数一起调用...
+const fullSalute = (c, x, y) => new c(x).salute(y);
+
+
+const French = makeSaluteClass("BON JOUR");
+
+fullSalute(French, "EPSILON", "ZETA");
+
+
+
+
+//交替执行函数..
+const a = (fn, gn) => {
+  let flag = true;
+  return (...args) => {
+    if (flag) {
+      fn(...args);
+    } else {
+      gn(...args);
+    }
+    flag = !flag;
+  };
+};
+
+let sayA = () => console.log("A");
+let sayB = () => console.log("B");
+let alt = a(sayA, sayB);
+
+alt(); // A
+alt(); // B
+alt(); // A
+alt(); // B
+alt(); // A
+alt(); // B
+
+
+//立即调用函数..
+const myCounter =(function(init=0){
+    let cnt = init
+    return function(){
+        cnt++
+        return cnt
+    }
+})(77)
+
+
+
+
+//立即执行函数闭包..内部函数和其他的唯一区别是可以接触到私有变量..
+const cnt = (function(int=0){
+    let n = int
+    return function (){
+        n++
+        console.log('n :>> ', n);
+        return n
+    }
+
+})(99)
+
+cnt()
+cnt()
+cnt()
+cnt()
+
+
+
+
+//这是一个简单的构造函数..
+function ShowItself2(identity) {
+//this.x = x的形式
+  this.identity = identity;
+  //this赋值给that保证里面的方法可以使用
+  let that = this;
+  setTimeout(function() {
+    console.log(that.identity);
+  }, 1000);
+
+//到方法里默认是会丢失的,所以进行bind(this)
+  setTimeout(
+    function() {
+      console.log(this.identity);
+    }.bind(this),
+    2000
+  );
+
+  setTimeout(() => {
+    console.log(this.identity);
+  }, 3000);
+}
+
+var x = new ShowItself2("JavaScript");
+// after one second, "JavaScript"
+// after another second, the same
+// after yet another second, once again
+
+
+
+
+//只要利用table可以简写代码
+const dispatchTable = {
+  CREATE: (state, action) => {
+    // update state, generating newState,
+    // depending on the action data
+    // to create a new item
+    return newState;
+  },
+
+  DELETE: (state, action) => {
+    // update state, generating newState,
+    // after deleting an item
+    return newState;
+  },
+
+  UPDATE: (state, action) => {
+    // update an item,
+    // and generate an updated state
+    return newState;
+  }
+};
+
+//利用table一行处理的reducer..
+function doAction2(state = initialState, action) {
+  return dispatchTable[action.type]
+    ? dispatchTable[action.type](state, action)
+    : state;
+}
+
+
+//function，清除字符串前后的空格。（兼容所有浏览器）？
+//如果不存在pttrim
+if (!String.prototype.trim) { 
+     String.prototype.trim = function() { 
+     //用正则式实现...
+     //this..就是调用...谁调用就是谁...
+         return this.replace(/^\s+/, "").replace(/\s+$/,"");
+                            //开头空格 
+ } 
+} 
+
+
+
+//用立即执行函数获给window.getAjax分配合适的函数...
+(function initializeGetAjax() {
+  let myAjax = null;
+
+  if (window.XMLHttpRequest) {
+    // modern browsers? use XMLHttpRequest
+    myAjax = function() {
+      return new XMLHttpRequest();
+    };
+        
+  } else if (window.ActiveXObject) {
+    // it's ActiveX for IE5 and IE6
+    myAjax = function() {
+      new ActiveXObject("Microsoft.XMLHTTP");
+    };
+        
+  } else {
+    myAjax = function() {
+      throw new Error("No Ajax support!");
+    };
+  }
+    
+  window.getAjax = myAjax;
+})();
+
+//立即执行函数的好处是..其中所有变量只有在执行是存在..
+//执行后就消失了..就有点类似阅后即焚..
+
+
+
+1700
+纯
+    =>不依赖和修改...
+    =>总是返回同样结果..
+
+
+
+
+//
+const getRandomLetter = (getRandomInt = Math.random) => {
+//获取A的数字
+  const min = "A".charCodeAt();
+  const max = "Z".charCodeAt();
+  return String.fromCharCode(
+  // [(大-小+1) +小]
+  //选定的范围用随机数..+1然后floor...
+    Math.floor(getRandomInt() * (1 + max - min)) + min
+  );
+};
+
+
+
+(async () =>{
+    console.log(..
+    const x = await ...
+
+
+aysnc函数总是返回promise...
+    异步函数执行时..就是类似lazy执行了..
+    开始执行了..但不会等结果...要等结果就要配合await..`
+
+
+1832
+包裹..有点类似装饰器....即保持不变但是增强函数...
+
+
+改变..
+    1.执行一次
+    2.求负数或者是反转
+    3.参数数量
+
+
+
+
+
+
+//原型链用构造函数生成了实例..修改了实力的pt...
+function f() {
+    this.a = 1;
+    this.b = 2;
+  }
+  let o = new f()
+
+f.prototype.b = 3;
+f.prototype.c = 4;
+
+
+
+ 构造函数创建的属性   pt 
+// {a:1, b:2} ---> {b:3, c:4} ---> Object.prototype---> nullo
+
+
+
+
+
+
+
+//核心代码就是bar.prototype = new foo()
+
+
+
+
+
+
+//foo在上,bar在下..
+function foo() {}
+function bar() {}
+foo.prototype.foo_prop = "foo val";
+//核心代码就是要链接bar的prototype 等于的被链接的实例..
+bar.prototype = new foo();
+
+//或者是用Object.create
+
+
+bar.prototype = Object.create(
+  foo.prototype,
+  {
+    bar_prop: {
+      value: "bar val"
+    }
+  }
+);
+
+
+
+bar.prototype.bar_prop = "bar val";
+var inst = new bar();
+
+
+
+
+
+//通过创建pt..
+//pt等于创建的pt..
+//且pt的构造需要修正..
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+Person.prototype.getName = function () {
+  console.log(this.name);
+};
+
+function Teacher(name, age, subject) {
+  Person.call(this, name, age);
+  this.subject = subject;
+}
+Teacher.prototype = Object.create(Person.prototype)
+Teacher.prototype.constructor = Teacher
+
+var teacher = new Teacher('jack', 25, "Math")
+
+console.log(teacher.age)
+console.log(teacher.name)
+console.log(teacher.subject)
+teacher.getName()
+
+
+
+
+
+
+
+//无非继承就是属性继承..
+
+
+
+function Person (name, age) {
+    this.name = name
+    this.age = age
+}
+
+// 方法定义在构造函数的原型上
+Person.prototype.getName = function () { console.log(this.name)}
+
+//用call进行属性继承
+function Teacher (name, age, subject) {
+    Person.call(this, name, age)
+    //特有属性
+    this.subject = subject
+}
+
+//用Object.create实现方法继承
+
+
+Teacher.prototype = Object.create(Person.prototype)
+Teacher.prototype.constructor = Teacher
+
+
+
+
+
+
+//继承属性...
+SuperType.call(this, name);
+this.age = age;
+
+
+//继承方法...
+SubType.prototype = new SuperType();
+SubType.prototype.sayAge = function() {
+console.log(this.age);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1月30日
+
+//使用__proto__建立原型链..
+rabbit.__proto__ = animal; 
+
+
+//不使用原型而是使用Object.create(p)
+let rabbit = Object.create(animal);
+
+
+getPrototypeOf(c) === p
+Object.setPrototypeOf(rabbit,p)
+
+为什么Object.create会更好..因为可以选择第二参数...
+即添加额外的属性...
+
+let animal = {
+    eats:true
+}
+
+let rabbit = Object.create(animal,{
+    jumps:{
+        value:true
+    }
+})
+
+
+
+
+
+
+
+//用定义的属性,这里定义了age...,且设置了getter..
+//this是为了使用fn里面的属性..
+function User(name, birthday) {
+  this.name = name;
+  this.birthday = birthday;
+
+  // age is calculated from the current date and birthday
+  Object.defineProperty(this, "age", {
+    get() {
+      let todayYear = new Date().getFullYear();
+      return todayYear - this.birthday.getFullYear();
+    },
+  });
+}
+
+let john = new User("John", new Date(1992, 6, 1));
+
+console.log(john.birthday); // birthday is available
+console.log(john.age); // ...as well as the age
+
+
+
+
+
+
+//简写类...
+class Planet {
+    constructor(public name: string, public mass: number) {
+    }
+}
+const p = new Planet("名字", 30)
+console.log(p.name);
+
+//复杂的写法..
+class Planet {
+    name: string;
+    mass: number;
+    constructor(inName: string, inMass: number) {
+        this.name = inName;
+        this.mass = inMass;
+    }
+}
+const p = new Planet("名字", 30)
+console.log(p.name);
+
+`
+
+
+
+
+
+
+
+
+
+
+
+
